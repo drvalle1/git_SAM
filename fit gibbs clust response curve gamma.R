@@ -9,7 +9,6 @@ sourceCpp('aux1.cpp')
 source('gibbs clust response curve gamma.R')
 
 ngroups=32
-gamma=0.1
 ngibbs=1000
 
 nome=paste0('fake ',c('data ','xmat '),'sim ',ngroups,'ng','.csv')
@@ -18,5 +17,6 @@ xmat=data.matrix(read.csv(nome[2],as.is=T))
 
 res=gibbs.clust.response.curve(y=y,xmat=xmat,ngroups=50,
                                ngibbs=ngibbs,burnin=ngibbs/2)
+
 
     

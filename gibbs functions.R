@@ -62,35 +62,44 @@ sample.betas=function(ngroups,cs,nparam,xtx,t.xmat,alpha,nloc,nspp,omega){
 #-----------------------------------------------
 sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
                    InvSigma.precalc,Sigma.precalc,lds,cs,nparam){
-  #pre-calculate stuff
-  q1=nloc*log(2*pi)
+  #pre-calculate stuff when beta is integrated out
+  p1=nloc*log(2*pi)
   alpha1=matrix(alpha,nloc,nspp,byrow=T)
   err=omega-alpha1
-  q2s=colSums(err^2)
-  q3k=-2*log(theta)
-  q4s=t(xmat)%*%err  
-  resto.media=xmat%*%betas
+  p2s=colSums(err^2)
+  q1s=t(xmat)%*%err  
+  mu=Sigma.precalc%*%q1s
+  p3s=-t(mu)%*%InvSigma.precalc%*%mu; 
+  p3s=as.numeric(diag(p3s))
+  p4=-lds
+  ltheta=log(theta)
+  p5k=-2*ltheta
+  
+  #pre-calculate other stuff
+  resto.media=xmat%*%betas  
+
+  #which groups exist and which don't?
+  tab=rep(0,ngroups)
+  tmp=table(cs)
+  tab[as.numeric(names(tmp))]=tmp
   
   #for each species
   for (i in 1:nspp){
+    tab[cs[i]]=tab[cs[i]]-1 #all but this species
+    
+    #lprob if group exists
+    omega1=matrix(omega[,i],nloc,ngroups)
+    media1=alpha[i]+resto.media
+    lprob.exist=colSums(dnorm(omega1,mean=media1,sd=1,log=T))+ltheta
+    
+    #lprob if group does not exist
+    lprob.not.exist=-(1/2)*(p1+p2s[i]+p3s[i]+p4+p5k)
+
     #get probabilities for each group
     lprob=rep(NA,ngroups)
-    for (j in 1:ngroups){ 
-      soma=sum(cs==j)
-      if (soma> 0){
-        lprob[j]=sum(dnorm(omega[,i],mean=alpha[i]+resto.media[,j],sd=1,log=T))+
-                 log(theta[j])
-      }
-      if (soma==0){
-        p1=q1
-        p2=q2s[i]
-        mu=Sigma.precalc%*%q4s[,i]
-        p3=-t(mu)%*%InvSigma.precalc%*%mu
-        p4=-lds
-        p5=q3k[j]
-        lprob[j]=-(1/2)*(p1+p2+p3+p4+p5)
-      }
-    }
+    cond=tab==0
+    lprob[ cond]=lprob.not.exist[cond]
+    lprob[!cond]=lprob.exist[!cond]
 
     #normalize probabilities
     max1=max(lprob)
@@ -102,6 +111,7 @@ sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
     ind=rmultinom(1,size=1,prob)
     ind1=which(ind==1)
     cs[i]=ind1
+    tab[ind1]=tab[ind1]+1
   }
   cs
 }
@@ -154,10 +164,8 @@ get.logl=function(y,omega,nspp,nloc,xmat,betas,cs,alpha){
 #----------------------------
 sample.gamma=function(v,ngroups,gamma.possib){
   ngamma=length(gamma.possib)
-  res=rep(NA,ngamma)
-  for (i in 1:ngamma){
-    res[i]=sum(dbeta(v,1,gamma.possib[i],log=T))
-  }
+  soma=sum(log(1-v[-ngroups]))
+  res=(gamma.possib-1)*soma
   res=res-max(res)
   res1=exp(res)
   res2=res1/sum(res1)
