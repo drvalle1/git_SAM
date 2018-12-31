@@ -8,6 +8,11 @@ nspp=ncol(y)
 nparam=ncol(xmat)
 gamma.possib=seq(from=0.1,to=1,by=0.05)
 
+#get invSigma, Sigma, lds for different values of n_k
+InvSigma.precalc=xtx+diag(1,nparam)
+Sigma.precalc=solve(InvSigma.precalc)
+lds=determinant(Sigma.precalc)$modulus[1] #log of determinant of covariance matrix
+
 #initial parameter values
 betas=matrix(0,nparam,ngroups)
 alpha=rep(0,nspp)
@@ -27,19 +32,21 @@ vec.cs=matrix(NA,ngibbs,nspp)
 
 for (i in 1:ngibbs){
   print(i)
+  
+  cs=sample.cs(ngroups=ngroups,omega=omega,xmat=xmat,alpha=alpha,betas=betas,theta=theta,
+               nspp=nspp,nloc=nloc,InvSigma.precalc=InvSigma.precalc,
+               Sigma.precalc=Sigma.precalc,lds=lds,cs=cs,nparam=nparam)
+  # cs=cs.true
+  
+  betas=sample.betas(ngroups=ngroups,cs=cs,nparam=nparam,xtx=xtx,t.xmat=t.xmat,alpha=alpha,
+                     nloc=nloc,nspp=nspp,omega=omega)
+  # betas=cbind(betas.true,matrix(0,nparam,ngroups-ncol(betas.true)))
+  
   omega=sample.omega(y=y,nspp=nspp,nloc=nloc,xmat=xmat,betas=betas,cs=cs,alpha=alpha)
   # omega=omega.true
     
   alpha=sample.alpha(nloc=nloc,xmat=xmat,betas=betas,omega=omega,cs=cs,nspp=nspp)
   # alpha=alpha.true
-  
-  betas=sample.betas(ngroups=ngroups,cs=cs,nparam=nparam,xtx=xtx,t.xmat=t.xmat,alpha=alpha,
-                     nloc=nloc,nspp=nspp,omega=omega)
-  # betas=betas.true
-  
-  cs=sample.cs(ngroups=ngroups,omega=omega,xmat=xmat,alpha=alpha,betas=betas,theta=theta,
-               nspp=nspp,nloc=nloc)
-  # cs=cs.true
   
   tmp=sample.theta(cs=cs,ngroups=ngroups,gamma=gamma,burnin=burnin,gibbs.step=i,
                    betas=betas,theta=theta)

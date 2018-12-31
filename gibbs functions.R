@@ -60,28 +60,50 @@ sample.betas=function(ngroups,cs,nparam,xtx,t.xmat,alpha,nloc,nspp,omega){
   betas
 }
 #-----------------------------------------------
-sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc){
-  #calculate probabilities for each species for each group
-  prob=matrix(NA,ngroups,nspp)
+sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
+                   InvSigma.precalc,Sigma.precalc,lds,cs,nparam){
+  #pre-calculate stuff
+  q1=nloc*log(2*pi)
   alpha1=matrix(alpha,nloc,nspp,byrow=T)
-  for (i in 1:ngroups){
-    media=xmat%*%betas[,i]
-    media1=alpha1+matrix(media,nloc,nspp)
-    prob[i,]=colSums(dnorm(omega,mean=media1,sd=1,log=T))+log(theta[i])
+  err=omega-alpha1
+  q2s=colSums(err^2)
+  q3k=-2*log(theta)
+  q4s=t(xmat)%*%err  
+  resto.media=xmat%*%betas
+  
+  #for each species
+  for (i in 1:nspp){
+    #get probabilities for each group
+    lprob=rep(NA,ngroups)
+    for (j in 1:ngroups){ 
+      soma=sum(cs==j)
+      if (soma> 0){
+        lprob[j]=sum(dnorm(omega[,i],mean=alpha[i]+resto.media[,j],sd=1,log=T))+
+                 log(theta[j])
+      }
+      if (soma==0){
+        p1=q1
+        p2=q2s[i]
+        mu=Sigma.precalc%*%q4s[,i]
+        p3=-t(mu)%*%InvSigma.precalc%*%mu
+        p4=-lds
+        p5=q3k[j]
+        lprob[j]=-(1/2)*(p1+p2+p3+p4+p5)
+      }
+    }
+
+    #normalize probabilities
+    max1=max(lprob)
+    tmp=lprob-max1
+    tmp1=exp(tmp)
+    prob=tmp1/sum(tmp1)
+    
+    #sample cs
+    ind=rmultinom(1,size=1,prob)
+    ind1=which(ind==1)
+    cs[i]=ind1
   }
-  
-  #make max=0
-  max1=apply(prob,2,max)
-  max2=matrix(max1,ngroups,nspp,byrow=T)
-  tmp=prob-max2
-  
-  #normalize probabilities
-  tmp1=exp(tmp)
-  soma=matrix(colSums(tmp1),ngroups,nspp,byrow=T)
-  prob=tmp1/soma
-  
-  #sample cs
-  rmultinom1(prob=t(prob),randu=runif(nspp))+1
+  cs
 }
 #-----------------------------------------------
 sample.theta=function(cs,ngroups,gamma,burnin,gibbs.step,betas,theta){
