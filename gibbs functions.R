@@ -75,31 +75,37 @@ sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
   ltheta=log(theta)
   p5k=-2*ltheta
   
-  #pre-calculate other stuff
-  resto.media=xmat%*%betas  
-
   #which groups exist and which don't?
   tab=rep(0,ngroups)
   tmp=table(cs)
   tab[as.numeric(names(tmp))]=tmp
-  
-  #for each species
+
+  #calculate probabilities if group already exists or if group is brand new
+  lprob.exist=matrix(NA,nspp,ngroups)
+  lprob.not.exist=matrix(NA,nspp,ngroups)
+  k=log(2*pi)
+  resto.media=xmat%*%betas  
+  for (i in 1:ngroups){
+    #lprob if group exists
+    resto.media1=matrix(resto.media[,i],nloc,nspp)
+    err2=(omega-(alpha1+resto.media1))^2
+    dnorm1=-0.5*(k+err2)
+    lprob.exist[,i]=colSums(dnorm1)+ltheta[i]
+    # z=colSums(dnorm(omega,mean=alpha1+resto.media1,sd=1,log=T))
+    
+    #lprob if group does not exist
+    lprob.not.exist[,i]=-0.5*(p1+p2s+p3s+p4+p5k[i])
+  }
+
+  #for each species, sample the cs's
   for (i in 1:nspp){
     tab[cs[i]]=tab[cs[i]]-1 #all but this species
     
-    #lprob if group exists
-    omega1=matrix(omega[,i],nloc,ngroups)
-    media1=alpha[i]+resto.media
-    lprob.exist=colSums(dnorm(omega1,mean=media1,sd=1,log=T))+ltheta
-    
-    #lprob if group does not exist
-    lprob.not.exist=-(1/2)*(p1+p2s[i]+p3s[i]+p4+p5k)
-
     #get probabilities for each group
     lprob=rep(NA,ngroups)
     cond=tab==0
-    lprob[ cond]=lprob.not.exist[cond]
-    lprob[!cond]=lprob.exist[!cond]
+    lprob[ cond]=lprob.not.exist[i,cond]
+    lprob[!cond]=lprob.exist[i,!cond]
 
     #normalize probabilities
     max1=max(lprob)
@@ -165,7 +171,9 @@ get.logl=function(y,omega,nspp,nloc,xmat,betas,cs,alpha){
 sample.gamma=function(v,ngroups,gamma.possib){
   ngamma=length(gamma.possib)
   soma=sum(log(1-v[-ngroups]))
-  res=(gamma.possib-1)*soma
+  k=(ngroups-1)*(lgamma(1+gamma.possib)-lgamma(gamma.possib))
+  res=k+(gamma.possib-1)*soma
+  # sum(dbeta(v[-ngroups],1,gamma.possib[5],log=T))
   res=res-max(res)
   res1=exp(res)
   res2=res1/sum(res1)
