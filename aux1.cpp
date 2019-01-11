@@ -23,7 +23,7 @@ int whichLessDVPresence(double value, NumericVector prob) {
   return res;
 }
 
-//' This function samples cs's
+//' This function samples cs's from a categorical distribution
 // [[Rcpp::export]]
 IntegerVector rmultinom1(NumericMatrix prob, NumericVector randu) {
   
