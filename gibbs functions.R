@@ -7,7 +7,7 @@
 #' @param hi upper truncation point. If there is no upper truncation, hi should be set to Inf 
 #' @param mu mode of the truncated normal distribution
 #' @param sig dispersion parameter for truncated normal
-#' @param return this function returns a vector of size n
+#' @return this function returns a vector of size n
 #' @export
 
 tnorm <- function(n,lo,hi,mu,sig){   
@@ -43,7 +43,7 @@ tnorm <- function(n,lo,hi,mu,sig){
 #' @param betas P x KS matrix containing slope parameters for each covariate (row) for each group (column)
 #' @param cs group assignment for each species
 #' @param alpha intercept for each species
-#' @param return this function returns a L x S matrix containing the underlying latent variables omega
+#' @return this function returns a L x S matrix containing the underlying latent variables omega
 #' @export
 
 sample.omega=function(y,nspp,nloc,xmat,betas,cs,alpha){
@@ -73,7 +73,7 @@ sample.omega=function(y,nspp,nloc,xmat,betas,cs,alpha){
 #' @param betas P x KS matrix containing slope parameters for each covariate (row) and each group (column)
 #' @param omega a matrix L x S containing the underlying latent variables omega
 #' @param cs vector of size S containing the group assignment for each species
-#' @param return this function returns a vector of size S with the intercept of each species
+#' @return this function returns a vector of size S with the intercept of each species
 #' @export
 #' 
 
@@ -104,7 +104,7 @@ sample.alpha=function(nloc,xmat,betas,omega,cs,nspp){
 #' @param nloc overall number of locations (L)
 #' @param nspp overall number of species (S)
 #' @param omega a matrix L x S containing the underlying latent variables omega
-#' @param return this function returns a P x KS matrix with regression slope parameters betas
+#' @return this function returns a P x KS matrix with regression slope parameters betas
 #' @export
 #' 
 
@@ -152,7 +152,7 @@ sample.betas=function(ngroups,cs,nparam,xtx,t.xmat,alpha,nloc,nspp,omega){
 #' @param lds log of determinant of covariance matrix for new group
 #' @param cs vector of size S with group assignment for each species
 #' @param nparam overall number of covariates (P)
-#' @param return a vector of size S with the group assignment variable cs
+#' @return a vector of size S with the group assignment variable cs
 #' @export
 
 sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
@@ -227,7 +227,7 @@ sample.cs=function(ngroups,omega,xmat,alpha,betas,theta,nspp,nloc,
 #' @param gibbs.step current iteration of the gibbs sampler
 #' @param betas P x KS matrix containing slope parameters for each covariate (row) and each group (column)
 #' @param theta vector of size KS with the probability of each species group
-#' @param return a list of 4 items (theta,betas,cs,v)
+#' @return a list of 4 items (theta,betas,cs,v)
 #' @export
 
 sample.theta=function(cs,ngroups,gamma,burnin,gibbs.step,betas,theta){
@@ -284,7 +284,7 @@ sample.theta=function(cs,ngroups,gamma,burnin,gibbs.step,betas,theta){
 #' @param betas P x KS matrix containing slope parameters for each covariate (row) and each group (column)
 #' @param cs vector of length S wth group assignment for each species
 #' @param alpha vector of length S with intercept for each species
-#' @param return log-likelihood of probit regression models
+#' @return log-likelihood of probit regression models
 #' @export
 
 get.logl=function(y,omega,nspp,nloc,xmat,betas,cs,alpha){
@@ -306,7 +306,7 @@ get.logl=function(y,omega,nspp,nloc,xmat,betas,cs,alpha){
 #' @param v vector of size KS with the stick-breaking parameters 
 #' @param ngroups maximum number of species groups (KS)
 #' @param gamma.possib set of possible values for gamma
-#' @param return a sample of gamma
+#' @return a sample of gamma
 #' @export
 
 sample.gamma=function(v,ngroups,gamma.possib){

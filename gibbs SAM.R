@@ -2,20 +2,22 @@
 #' 
 #' Runs the Gibbs sampler and returns samples from the posterior distribution
 #' 
-#' @param y L X S matrix, containing the presence-absence data 
+#' @param y this matrix has L rows (locations) and S columns (species) and contains the presence-absence data
 #' @param xmat L X P design matrix containing the covariates (columns) for each
 #'             location (rows). Notice that this matrix does not contain a column of 1's for the intercept            
-#' @param ngroups maximum number of species groups (KS)
+#' @param ngroups maximum number of species groups (K)
 #' @param ngibbs  number of Gibbs sampler iterations          
 #' @param burnin  number of iterations to discard as part of burn-in phase
-#' @param return this function returns a list containing several matrices, all of which have 
-#'               ngibbs-burnin rows, containing samples from the posterior distribution of:
-#'               - theta: probability associated with each species group
-#'               - logl:  log-likelihood for each iteration
-#'               - betas: slope parameters for each group
-#'               - cs:    cluster assignment of each species
-#'               - alpha: intercept of each species
-#'               - gamma: TSB prior parameter
+#' @return this function returns a list containing several matrices, all of which have 
+#'         ngibbs-burnin rows, containing samples from the posterior distribution of:
+#'               \itemize{
+#'                  \item logl:  log-likelihood for each iteration
+#'                  \item theta: probability associated with each species group
+#'                  \item betas: slope parameters for each group
+#'                  \item cs:    cluster assignment of each species
+#'                  \item alpha: intercept of each species
+#'                  \item gamma: TSB prior parameter
+#'               } 
 #' @export
 
 gibbs.SAM=function(y,xmat,ngroups,ngibbs,burnin){

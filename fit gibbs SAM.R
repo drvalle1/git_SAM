@@ -15,8 +15,7 @@ nome=paste0('fake ',c('data ','xmat '),'sim ',ngroups,'ng','.csv')
 y=data.matrix(read.csv(nome[1],as.is=T))
 xmat=data.matrix(read.csv(nome[2],as.is=T))
 
-res=gibbs.SAM(y=y,xmat=xmat,ngroups=50,
-                               ngibbs=ngibbs,burnin=ngibbs/2)
+res=gibbs.SAM(y=y,xmat=xmat,ngroups=50,ngibbs=ngibbs,burnin=ngibbs/2)
 
 
     
